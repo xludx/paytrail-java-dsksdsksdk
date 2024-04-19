@@ -1,0 +1,3845 @@
+openapi: 3.0.0
+info:
+  contact:
+    name: Checkout
+    url: https://github.com/paytrail/api-documentation/issues
+  description: |
+    Paytrail Payment API
+  title: Payment API
+  version: 2.0.0
+servers:
+- url: https://services.paytrail.com
+tags:
+- description: "Create, fetch or refund payments"
+  name: payments
+- description: Tokenize payment cards and issue payments on tokens
+  name: token payments
+- description: Request a payment report
+  name: payment reports
+- description: List settlement IDs
+  name: settlements
+paths:
+  /payments:
+    post:
+      description: "Create a new open payment, returns a list of available payment\
+        \ methods."
+      operationId: createPayment
+      parameters:
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: "For SaaS services, use the marketing name of the platform (for\
+          \ example, shopify). For third party eCommerce platform plugins, use the\
+          \ platform name and your identifier, like company name (for example, woocommerce-yourcompany).\
+          \ Platform and integrator information helps customer service to provide\
+          \ better assistance for the merchants using the integration."
+        explode: false
+        in: header
+        name: platform-name
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+        description: Payment body payload
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRequestResponse'
+          description: Payment request created successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Create a new open payment
+      tags:
+      - payments
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /payments/{transactionId}:
+    get:
+      description: Get a single payment
+      operationId: getPaymentByTransactionId
+      parameters:
+      - description: Transaction ID of payment to fetch
+        explode: false
+        in: path
+        name: transactionId
+        required: true
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: GET
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: The same transaction ID as in route
+        explode: false
+        in: header
+        name: checkout-transaction-id
+        required: false
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: "For SaaS services, use the marketing name of the platform (for\
+          \ example, shopify). For third party eCommerce platform plugins, use the\
+          \ platform name and your identifier, like company name (for example, woocommerce-yourcompany).\
+          \ Platform and integrator information helps customer service to provide\
+          \ better assistance for the merchants using the integration."
+        explode: false
+        in: header
+        name: platform-name
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: Payment response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: The specified resource was not found
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Get a payment by Checkout transaction ID
+      tags:
+      - payments
+      x-accepts:
+      - application/json
+  /payments/{transactionId}/refund:
+    post:
+      description: |
+        Refund a payment by transaction ID. Refund operation is asynchronous. Refund request is validated,
+        and if the refund can be done a 201 is returned.
+      operationId: refundPaymentByTransactionId
+      parameters:
+      - description: Transaction ID of payment to refund
+        explode: false
+        in: path
+        name: transactionId
+        required: true
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: The same transaction ID as in route
+        explode: false
+        in: header
+        name: checkout-transaction-id
+        required: false
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: "For SaaS services, use the marketing name of the platform (for\
+          \ example, shopify). For third party eCommerce platform plugins, use the\
+          \ platform name and your identifier, like company name (for example, woocommerce-yourcompany).\
+          \ Platform and integrator information helps customer service to provide\
+          \ better assistance for the merchants using the integration."
+        explode: false
+        in: header
+        name: platform-name
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Refund'
+        description: Refund payload
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundResponse'
+          description: Refund created succesfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: The specified resource was not found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Payment method provider does not support refunds
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Refund a payment
+      tags:
+      - payments
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /payments/{transactionId}/activate-invoice:
+    post:
+      description: |
+        Manually activate invoice by transaction ID. Can only be used if payment was paid with Collector and is in pending status.
+      operationId: activateInvoiceByTransactionId
+      parameters:
+      - description: Transaction ID of payment to activate invoice
+        explode: false
+        in: path
+        name: transactionId
+        required: true
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: The same transaction ID as in route
+        explode: false
+        in: header
+        name: checkout-transaction-id
+        required: false
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivateInvoiceResponse'
+          description: Invoice activated succesfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: The specified resource was not found
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Activate invoice
+      tags:
+      - payments
+      x-accepts:
+      - application/json
+  /merchants/payment-providers:
+    get:
+      description: |
+        Returns the payment methods available for merchant without creating
+        a new payment to the system. Useful for displaying payment provider
+        icons during different phases of checkout before finally actually
+        creating the payment request when customer decides to pay
+      operationId: getPaymentProviders
+      parameters:
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: GET
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Optional amount in minor unit (eg. EUR cents) for the payment providers. Some providers have minimum
+          or maximum amounts that can be purchased.
+        example: 500
+        explode: true
+        in: query
+        name: amount
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: form
+      - description: Comma separated list of payment method groups to include in the
+          reply.
+        explode: false
+        in: query
+        name: groups
+        required: false
+        schema:
+          items:
+            enum:
+            - mobile
+            - bank
+            - creditcard
+            - credit
+            - other
+            type: string
+          type: array
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/BasePaymentMethodProvider'
+                type: array
+          description: Payment methods available
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: List merchant payment methods
+      tags:
+      - payments
+      - providers
+      x-accepts:
+      - application/json
+  /merchants/grouped-payment-providers:
+    get:
+      description: |
+        Similar to the /merchants/payment-providers, but in addition of a flat
+        list of providers, it returns payment group data containing localized
+        names, icon URLs and grouped providers, and a localized text
+        with a link to the terms of payment.
+      operationId: getGroupedPaymentProviders
+      parameters:
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: GET
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Optional amount in minor unit (eg. EUR cents) for the payment providers. Some providers have minimum
+          or maximum amounts that can be purchased.
+        example: 500
+        explode: true
+        in: query
+        name: amount
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: form
+      - description: Comma separated list of payment method groups to include in the
+          reply.
+        explode: false
+        in: query
+        name: groups
+        required: false
+        schema:
+          items:
+            enum:
+            - mobile
+            - bank
+            - creditcard
+            - credit
+            - other
+            type: string
+          type: array
+        style: form
+      - description: |
+          Language code of the language the terms of payment and the payment group names will be localized in.
+          Defaults to FI if left undefined
+        explode: true
+        in: query
+        name: language
+        required: false
+        schema:
+          enum:
+          - FI
+          - SV
+          - EN
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupedPaymentProvidersResponse'
+          description: Payment methods available
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: List grouped merchant payment methods
+      tags:
+      - payments
+      - providers
+      x-accepts:
+      - application/json
+  /settlements:
+    get:
+      description: |
+        Returns settlement IDs
+      operationId: listSettlementIds
+      parameters:
+      - description: Filter out settlements created before given date.
+        example: 2019-01-01
+        explode: true
+        in: query
+        name: startDate
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      - description: Filter out settlements created after given date.
+        example: 2019-01-01
+        explode: true
+        in: query
+        name: endDate
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      - description: Only include settlements with the given bank reference
+        example: 1234567890-1111
+        explode: true
+        in: query
+        name: bankReference
+        required: false
+        schema:
+          maxLength: 20
+          type: string
+        style: form
+      - description: Limit the number of settlement IDs returned
+        example: "1"
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          format: integer
+          type: string
+        style: form
+      - description: Get submerchant's payment report
+        example: "695874"
+        explode: true
+        in: header
+        name: submerchant
+        required: false
+        schema:
+          format: integer
+          type: string
+        style: form
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/SettlementIdItem'
+                type: array
+          description: List of settlement IDs
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: The specified resource was not found
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: List settlement IDs
+      tags:
+      - settlements
+      x-accepts:
+      - application/json
+  /tokenization/addcard-form:
+    post:
+      description: |
+        Request a redirect to card addition form. This will redirect user to the card addition form, then back to Checkout servers, and finally to merchant's redirect url.
+      operationId: addCardForm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCardFormRequest'
+        description: Add card payload
+        required: true
+      responses:
+        "302":
+          description: Redirect to card addition form (or checkout-redirect-cancel-url)
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Tokenization not allowed for merchant
+      summary: Request a redirect to card addition form
+      tags:
+      - token payments
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /tokenization/{checkout-tokenization-id}:
+    post:
+      description: |
+        Use checkout-tokenization-id received from /tokenization/addcard-form redirect to request a token which can be used for payments.
+      operationId: requestTokenForTokenizationId
+      parameters:
+      - description: Tokenization id received from /tokenization/addcard-form
+        explode: false
+        in: path
+        name: checkout-tokenization-id
+        required: true
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: Tokenization id received from /tokenization/addcard-form
+        explode: false
+        in: header
+        name: checkout-tokenization-id
+        required: false
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: "For SaaS services, use the marketing name of the platform (for\
+          \ example, shopify). For third party eCommerce platform plugins, use the\
+          \ platform name and your identifier, like company name (for example, woocommerce-yourcompany).\
+          \ Platform and integrator information helps customer service to provide\
+          \ better assistance for the merchants using the integration."
+        explode: false
+        in: header
+        name: platform-name
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetTokenRequest'
+        description: Tokenization request payload
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenizationRequestResponse'
+          description: Tokenization request response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Credit cards and/or AMEX not enabled for merchant
+      summary: Request a card token for given tokenization id
+      tags:
+      - token payments
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /payments/token/mit/charge:
+    post:
+      description: |
+        Request merchant initiated transaction charge on token. This method should be used when charging the customer's card in a context, where the customer is not actively participating in the transaction.
+      operationId: tokenMitCharge
+      parameters:
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: "For SaaS services, use the marketing name of the platform (for\
+          \ example, shopify). For third party eCommerce platform plugins, use the\
+          \ platform name and your identifier, like company name (for example, woocommerce-yourcompany).\
+          \ Platform and integrator information helps customer service to provide\
+          \ better assistance for the merchants using the integration."
+        explode: false
+        in: header
+        name: platform-name
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenPaymentRequest'
+        description: MIT Charge payload
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenMITPaymentResponse'
+          description: MIT charge request created successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Request merchant initiated transaction charge on token
+      tags:
+      - token payments
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /payments/token/mit/authorization-hold:
+    post:
+      description: |
+        Request merchant initiated transaction authorization hold on token. This method should be used when creating an authorization hold on the customer's card in a context, where the customer is not actively participating in the transaction.
+      operationId: tokenMitAuthorizationHold
+      parameters:
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: "For SaaS services, use the marketing name of the platform (for\
+          \ example, shopify). For third party eCommerce platform plugins, use the\
+          \ platform name and your identifier, like company name (for example, woocommerce-yourcompany).\
+          \ Platform and integrator information helps customer service to provide\
+          \ better assistance for the merchants using the integration."
+        explode: false
+        in: header
+        name: platform-name
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenPaymentRequest'
+        description: MIT Charge payload
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenMITPaymentResponse'
+          description: MIT authorization hold request created successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Request merchant initiated transaction authorization hold on token
+      tags:
+      - token payments
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /payments/token/cit/charge:
+    post:
+      description: |
+        Request customer initiated transaction charge on token. CIT charges can sometimes require further 3DS authentication step-up. See detailed documentation at https://checkoutfinland.github.io/psp-api/#/?id=customer-initiated-transactions-cit
+      operationId: tokenCitCharge
+      parameters:
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: "For SaaS services, use the marketing name of the platform (for\
+          \ example, shopify). For third party eCommerce platform plugins, use the\
+          \ platform name and your identifier, like company name (for example, woocommerce-yourcompany).\
+          \ Platform and integrator information helps customer service to provide\
+          \ better assistance for the merchants using the integration."
+        explode: false
+        in: header
+        name: platform-name
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenPaymentRequest'
+        description: CIT Charge payload
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenMITPaymentResponse'
+          description: CIT charge request created successfully.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenCITPaymentResponse'
+          description: CIT charge requires 3DS authentication step up. Please redirect
+            user to given URL.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Request customer initiated transaction charge on token
+      tags:
+      - token payments
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /payments/token/cit/authorization-hold:
+    post:
+      description: |
+        Request customer initiated transaction authorization hold on token. CIT authorization holds can sometimes require further 3DS authentication step-up. See detailed documentation at https://checkoutfinland.github.io/psp-api/#/?id=customer-initiated-transactions-cit
+      operationId: tokenCitAuthorizationHold
+      parameters:
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: "For SaaS services, use the marketing name of the platform (for\
+          \ example, shopify). For third party eCommerce platform plugins, use the\
+          \ platform name and your identifier, like company name (for example, woocommerce-yourcompany).\
+          \ Platform and integrator information helps customer service to provide\
+          \ better assistance for the merchants using the integration."
+        explode: false
+        in: header
+        name: platform-name
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenPaymentRequest'
+        description: CIT authorization hold payload
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenMITPaymentResponse'
+          description: CIT authorization hold request created successfully.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenCITPaymentResponse'
+          description: CIT authorization hold requires 3DS authentication step up.
+            Please redirect user to given URL.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Request customer initiated transaction authorization hold on token
+      tags:
+      - token payments
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /payments/{transactionId}/token/commit:
+    post:
+      description: |
+        Request committing of previously created authorization hold. The final amount committed can either equal or be less than the authorization hold. The committed amount may not exceed the authorization hold. The final items may differ from the ones used when creating the authorization hold.
+      operationId: tokenCommit
+      parameters:
+      - description: The transaction ID
+        explode: false
+        in: path
+        name: transactionId
+        required: true
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: The same transaction ID as in route
+        explode: false
+        in: header
+        name: checkout-transaction-id
+        required: false
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: "For SaaS services, use the marketing name of the platform (for\
+          \ example, shopify). For third party eCommerce platform plugins, use the\
+          \ platform name and your identifier, like company name (for example, woocommerce-yourcompany).\
+          \ Platform and integrator information helps customer service to provide\
+          \ better assistance for the merchants using the integration."
+        explode: false
+        in: header
+        name: platform-name
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenPaymentRequest'
+        description: CIT commit payload
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenMITPaymentResponse'
+          description: CIT authorization hold committed successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Request committing (charging) of previously created authorization hold
+        on token
+      tags:
+      - token payments
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /payments/{transactionId}/token/revert:
+    post:
+      description: |
+        Request committing of previously created authorization hold. A successful revert will remove the authorization hold from the payer's bank account.
+      operationId: tokenRevert
+      parameters:
+      - description: The transaction ID
+        explode: false
+        in: path
+        name: transactionId
+        required: true
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: The same transaction ID as in route
+        explode: false
+        in: header
+        name: checkout-transaction-id
+        required: false
+        schema:
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: Unique random identifier
+        example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        explode: false
+        in: header
+        name: checkout-nonce
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: "For SaaS services, use the marketing name of the platform (for\
+          \ example, shopify). For third party eCommerce platform plugins, use the\
+          \ platform name and your identifier, like company name (for example, woocommerce-yourcompany).\
+          \ Platform and integrator information helps customer service to provide\
+          \ better assistance for the merchants using the integration."
+        explode: false
+        in: header
+        name: platform-name
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenMITPaymentResponse'
+          description: Authorization hold reverted successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Revert (removal) of previously created authorization hold on token
+      tags:
+      - token payments
+      x-accepts:
+      - application/json
+  /payments/report:
+    post:
+      callbacks:
+        reportReady:
+          '{$request.body#/callbackUrl}':
+            post:
+              operationId: reportReady_Post
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/PaymentReportCallbackJSON'
+                  application/csv:
+                    schema:
+                      description: The report as a CSV file
+                      type: string
+                required: true
+              responses:
+                "200":
+                  description: Your server returns this code if it can accept the
+                    callback
+                default:
+                  description: Your server can not handle callback - will result in
+                    re-sending of the report to the given callback url.
+              x-callback-request: true
+      description: |
+        Request a report of payments to be sent to the given callback url. Callback schema defined in PaymentReportCallbackJSON.
+      operationId: requestPaymentReport
+      parameters:
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentReportRequest'
+        description: Payment body payload
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentReportRequestResponse'
+          description: Payment report request response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: The specified resource was not found
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Request a payment report
+      tags:
+      - payment reports
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /settlements/{settlementId}/payments/report:
+    post:
+      callbacks:
+        reportReady:
+          '{$request.body#/callbackUrl}':
+            post:
+              operationId: reportReady_Post
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/PaymentReportCallbackJSON'
+                  application/csv:
+                    schema:
+                      description: The report as a CSV file
+                      type: string
+                required: true
+              responses:
+                "200":
+                  description: Your server returns this code if it can accept the
+                    callback
+                default:
+                  description: Your server can not handle callback - will result in
+                    re-sending of the report to the given callback url.
+              x-callback-request: true
+      description: |
+        Request a report of payments contained in a given settlement to be sent to the given callback url. Callback schema defined in PaymentReportCallbackJSON.
+      operationId: requestPaymentReportBySettlementId
+      parameters:
+      - description: Settlement ID
+        explode: false
+        in: path
+        name: settlementId
+        required: true
+        schema:
+          example: "2397548234"
+          type: string
+        style: simple
+      - description: Merchant ID
+        example: 375917
+        explode: false
+        in: header
+        name: checkout-account
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: simple
+      - description: HMAC algorithm
+        example: sha512
+        explode: false
+        in: header
+        name: checkout-algorithm
+        required: false
+        schema:
+          enum:
+          - sha256
+          - sha512
+          type: string
+        style: simple
+      - description: HTTP method of the request
+        example: POST
+        explode: false
+        in: header
+        name: checkout-method
+        required: false
+        schema:
+          enum:
+          - GET
+          - POST
+          type: string
+        style: simple
+      - description: Current timestamp in ISO 8601 format
+        example: 2018-08-08T10:10:59Z
+        explode: false
+        in: header
+        name: checkout-timestamp
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: simple
+      - description: HMAC signature calculated over the request headers and payload
+        explode: false
+        in: header
+        name: signature
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentReportBySettlementIdRequest'
+        description: Payment body payload
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentReportRequestResponse'
+          description: Payment report request response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Request did not pass input validation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: The specified resource was not found
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unexpected error
+      summary: Request a report of payments contained in a given settlement
+      tags:
+      - payment reports
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+components:
+  responses:
+    BadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Request did not pass input validation
+    NotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: The specified resource was not found
+    Unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Unauthorized
+    Error:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Unexpected error
+  schemas:
+    PaymentRequest:
+      description: Payment request payload
+      example:
+        amount: 1590
+        orderId: orderId
+        usePricesWithoutVat: false
+        stamp: "29858472952"
+        callbackUrls:
+          cancel: https://ecom.example.org/cancel
+          success: https://ecom.example.org/success
+        groups:
+        - mobile
+        - mobile
+        language: FI
+        invoicingAddress:
+          country: SE
+          streetAddress: Fake street 123
+          city: Luleå
+          postalCode: "00100"
+          county: Norrbotten
+        redirectUrls:
+          cancel: https://ecom.example.org/cancel
+          success: https://ecom.example.org/success
+        reference: "9187445"
+        deliveryAddress:
+          country: SE
+          streetAddress: Fake street 123
+          city: Luleå
+          postalCode: "00100"
+          county: Norrbotten
+        currency: EUR
+        manualInvoiceActivation: false
+        callbackDelay: 60
+        items:
+        - unitPrice: 1590
+          reference: "9187445"
+          productCode: '#927502759'
+          orderId: orderId
+          vatPercentage: 24
+          description: Cat ladder
+          merchant: "375917"
+          stamp: "29858472952"
+          commission:
+            amount: 8008281
+            merchant: merchant
+          units: 1
+          deliveryDate: 2018-03-07
+          category: shoe
+        - unitPrice: 1590
+          reference: "9187445"
+          productCode: '#927502759'
+          orderId: orderId
+          vatPercentage: 24
+          description: Cat ladder
+          merchant: "375917"
+          stamp: "29858472952"
+          commission:
+            amount: 8008281
+            merchant: merchant
+          units: 1
+          deliveryDate: 2018-03-07
+          category: shoe
+        customer:
+          firstName: John
+          lastName: Doe
+          phone: "358501234567"
+          vatId: FI02454583
+          email: john.doe@example.org
+      properties:
+        stamp:
+          description: Merchant specific unique stamp
+          example: "29858472952"
+          maxLength: 200
+          type: string
+        reference:
+          description: Merchant reference for the payment
+          example: "9187445"
+          maxLength: 200
+          type: string
+        amount:
+          description: "Total amount of the payment (sum of items), VAT should be\
+            \ included in amount unless `usePricesWithoutVat` is set to true"
+          example: 1590
+          format: int64
+          maximum: 99999999
+          minimum: 0
+          type: integer
+        currency:
+          enum:
+          - EUR
+          example: EUR
+          type: string
+        language:
+          description: Alpha-2 language code for the payment process
+          enum:
+          - FI
+          - SV
+          - EN
+          example: FI
+          type: string
+        orderId:
+          description: "Order ID. Used for eg. Collector payments order ID. If not\
+            \ given, merchant reference is used instead."
+          maxLength: 60
+          type: string
+        items:
+          items:
+            $ref: '#/components/schemas/Item'
+          type: array
+        customer:
+          $ref: '#/components/schemas/Customer'
+        deliveryAddress:
+          $ref: '#/components/schemas/Address'
+        invoicingAddress:
+          $ref: '#/components/schemas/Address'
+        manualInvoiceActivation:
+          description: "If paid with invoice payment method, the invoice will not\
+            \ be activated automatically immediately. Currently only supported with\
+            \ Collector."
+          example: false
+          type: boolean
+        redirectUrls:
+          $ref: '#/components/schemas/Callbacks'
+        callbackUrls:
+          $ref: '#/components/schemas/Callbacks'
+        callbackDelay:
+          description: "Callback delay in seconds. If callback URLs and delay are\
+            \ provided, callbacks will be called after the delay."
+          example: 60
+          maximum: 900
+          minimum: 0
+          type: integer
+        groups:
+          description: Optionally return only payment methods for selected groups
+          items:
+            enum:
+            - mobile
+            - bank
+            - creditcard
+            - credit
+            - other
+            type: string
+          type: array
+        usePricesWithoutVat:
+          description: "If true, `amount` and `items.unitPrice` should be sent to\
+            \ API without VAT, and final VAT-included prices are calculated by Paytrail's\
+            \ system (with prices rounded to closest cent). Also, when true, items\
+            \ must be included."
+          example: false
+          type: boolean
+      required:
+      - amount
+      - currency
+      - customer
+      - items
+      - language
+      - redirectUrls
+      - reference
+      - stamp
+      type: object
+    TokenPaymentRequest:
+      description: Payment request payload
+      example:
+        amount: 1590
+        orderId: orderId
+        stamp: "29858472952"
+        callbackUrls:
+          cancel: https://ecom.example.org/cancel
+          success: https://ecom.example.org/success
+        language: FI
+        invoicingAddress:
+          country: SE
+          streetAddress: Fake street 123
+          city: Luleå
+          postalCode: "00100"
+          county: Norrbotten
+        redirectUrls:
+          cancel: https://ecom.example.org/cancel
+          success: https://ecom.example.org/success
+        token: 123e4567-e89b-12d3-a456-426655440000
+        reference: "9187445"
+        deliveryAddress:
+          country: SE
+          streetAddress: Fake street 123
+          city: Luleå
+          postalCode: "00100"
+          county: Norrbotten
+        currency: EUR
+        callbackDelay: 60
+        items:
+        - unitPrice: 1590
+          reference: "9187445"
+          productCode: '#927502759'
+          orderId: orderId
+          vatPercentage: 24
+          description: Cat ladder
+          merchant: "375917"
+          stamp: "29858472952"
+          commission:
+            amount: 8008281
+            merchant: merchant
+          units: 1
+          deliveryDate: 2018-03-07
+          category: shoe
+        - unitPrice: 1590
+          reference: "9187445"
+          productCode: '#927502759'
+          orderId: orderId
+          vatPercentage: 24
+          description: Cat ladder
+          merchant: "375917"
+          stamp: "29858472952"
+          commission:
+            amount: 8008281
+            merchant: merchant
+          units: 1
+          deliveryDate: 2018-03-07
+          category: shoe
+        customer:
+          firstName: John
+          lastName: Doe
+          phone: "358501234567"
+          vatId: FI02454583
+          email: john.doe@example.org
+      properties:
+        stamp:
+          description: Merchant specific unique stamp
+          example: "29858472952"
+          maxLength: 200
+          type: string
+        reference:
+          description: Merchant reference for the payment
+          example: "9187445"
+          maxLength: 200
+          type: string
+        amount:
+          description: "Total amount of the payment (sum of items), VAT included"
+          example: 1590
+          format: int64
+          maximum: 99999999
+          minimum: 0
+          type: integer
+        currency:
+          enum:
+          - EUR
+          example: EUR
+          type: string
+        language:
+          description: Alpha-2 language code for the payment process
+          enum:
+          - FI
+          - SV
+          - EN
+          example: FI
+          type: string
+        orderId:
+          description: "Order ID. Used for eg. Collector payments order ID. If not\
+            \ given, merchant reference is used instead."
+          maxLength: 60
+          type: string
+        items:
+          items:
+            $ref: '#/components/schemas/Item'
+          type: array
+        customer:
+          $ref: '#/components/schemas/Customer'
+        deliveryAddress:
+          $ref: '#/components/schemas/Address'
+        invoicingAddress:
+          $ref: '#/components/schemas/Address'
+        redirectUrls:
+          $ref: '#/components/schemas/Callbacks'
+        callbackUrls:
+          $ref: '#/components/schemas/Callbacks'
+        callbackDelay:
+          description: "Callback delay in seconds. If callback URLs and delay are\
+            \ provided, callbacks will be called after the delay."
+          example: 60
+          maximum: 900
+          minimum: 0
+          type: integer
+        token:
+          description: "Payment card token received from request to /tokenization/{checkout-tokenization-id}"
+          example: 123e4567-e89b-12d3-a456-426655440000
+          type: string
+      required:
+      - amount
+      - currency
+      - customer
+      - items
+      - language
+      - redirectUrls
+      - reference
+      - stamp
+      - token
+      type: object
+    GetTokenRequest:
+      description: Get token request payload
+      example:
+        checkout-tokenization-id: 123e4567-e89b-12d3-a456-426655440000
+      properties:
+        checkout-tokenization-id:
+          example: 123e4567-e89b-12d3-a456-426655440000
+          format: uuid
+          type: string
+      required:
+      - checkout-tokenization-id
+      type: object
+    Item:
+      example:
+        unitPrice: 1590
+        reference: "9187445"
+        productCode: '#927502759'
+        orderId: orderId
+        vatPercentage: 24
+        description: Cat ladder
+        merchant: "375917"
+        stamp: "29858472952"
+        commission:
+          amount: 8008281
+          merchant: merchant
+        units: 1
+        deliveryDate: 2018-03-07
+        category: shoe
+      properties:
+        unitPrice:
+          description: "Unit price of an item in currency minor unit, eg. EUR cents.\
+            \ VAT should be included in amount unless `usePricesWithoutVat` is set\
+            \ to true."
+          example: 1590
+          format: int64
+          maximum: 99999999
+          minimum: 0
+          type: integer
+        units:
+          description: Number of units
+          example: 1
+          format: int64
+          maximum: 10000000
+          minimum: 1
+          type: integer
+        vatPercentage:
+          description: Item VAT percentage
+          example: 24
+          format: int64
+          maximum: 100
+          minimum: 0
+          type: integer
+        productCode:
+          description: Merchant specific product code
+          example: '#927502759'
+          maxLength: 100
+          type: string
+        deliveryDate:
+          description: Estimated delivery date
+          example: 2018-03-07
+          format: date
+          type: string
+        description:
+          description: Merchant specific product description
+          example: Cat ladder
+          maxLength: 1000
+          type: string
+        category:
+          description: Item product category
+          example: shoe
+          maxLength: 100
+          type: string
+        merchant:
+          description: "Submerchant ID. Required for shop-in-shop payments, leave\
+            \ out from normal payments."
+          example: "375917"
+          maxLength: 10
+          type: string
+        stamp:
+          description: "Submerchant specific unique stamp. Required for shop-in-shop\
+            \ payments, leave out from normal payments."
+          example: "29858472952"
+          maxLength: 200
+          type: string
+        reference:
+          description: "Submerchant reference for the item. Required for shop-in-shop\
+            \ payments, leave out from normal payments."
+          example: "9187445"
+          maxLength: 200
+          type: string
+        orderId:
+          description: "Order ID. Used for eg. Collector payments order ID. If not\
+            \ given, merchant reference is used instead."
+          maxLength: 60
+          type: string
+        commission:
+          $ref: '#/components/schemas/Item_commission'
+      required:
+      - productCode
+      - unitPrice
+      - units
+      - vatPercentage
+      type: object
+    Callbacks:
+      example:
+        cancel: https://ecom.example.org/cancel
+        success: https://ecom.example.org/success
+      properties:
+        success:
+          description: |
+            URL to call when payment is succesfully paid.
+            Can called multiple times; one must ensure idempotency of this endpoint.
+          example: https://ecom.example.org/success
+          maxLength: 300
+          type: string
+        cancel:
+          description: |
+            URL to call when payment is cancelled and not fulfilled.
+            Can called multiple times; one must ensure idempotency of this endpoint.
+          example: https://ecom.example.org/cancel
+          maxLength: 300
+          type: string
+      required:
+      - cancel
+      - success
+      type: object
+    Address:
+      example:
+        country: SE
+        streetAddress: Fake street 123
+        city: Luleå
+        postalCode: "00100"
+        county: Norrbotten
+      properties:
+        streetAddress:
+          description: Street address
+          example: Fake street 123
+          maxLength: 200
+          type: string
+        postalCode:
+          description: Postal code
+          example: "00100"
+          maxLength: 15
+          pattern: "^[0-9A-z -]+$"
+          type: string
+        city:
+          description: City
+          example: Luleå
+          maxLength: 200
+          type: string
+        county:
+          description: County or top-level geographic subdivision
+          example: Norrbotten
+          maxLength: 200
+          type: string
+        country:
+          description: Alpha-2 country code
+          example: SE
+          maxLength: 2
+          type: string
+      required:
+      - city
+      - country
+      - postalCode
+      - streetAddress
+      type: object
+    Customer:
+      example:
+        firstName: John
+        lastName: Doe
+        phone: "358501234567"
+        vatId: FI02454583
+        email: john.doe@example.org
+      properties:
+        email:
+          description: Customer email address
+          example: john.doe@example.org
+          format: email
+          type: string
+        firstName:
+          description: Customer first name
+          example: John
+          type: string
+        lastName:
+          description: Customer last name
+          example: Doe
+          type: string
+        phone:
+          description: Customer phone number
+          example: "358501234567"
+          type: string
+        vatId:
+          description: Company VAT ID in international format
+          example: FI02454583
+          type: string
+      required:
+      - email
+      type: object
+    TokenCustomerDetails:
+      example:
+        country_code: FI
+        network_address: 93.174.192.154
+      properties:
+        network_address:
+          description: Customer IP address
+          example: 93.174.192.154
+          type: string
+        country_code:
+          description: Customer country code
+          example: FI
+          type: string
+      required:
+      - country_code
+      - network_address
+      type: object
+    Card:
+      example:
+        country_code: FI
+        funding: debit
+        card_fingerprint: da6b0df36efd17c0e7f6967b9e440a0c61b6bd3d96b62f14c90155a1fb883597
+        cvc_required: "false"
+        bin: "415301"
+        partial_pan: "20"
+        expire_month: "11"
+        expire_year: "2023"
+        type: Visa
+        category: unknown
+        pan_fingerprint: e858e18daac509247f463292641237d6a74ce44e0971ba2de4a14874928a8805
+      properties:
+        type:
+          description: "Card type, for example ‘Visa’"
+          example: Visa
+          type: string
+        partial_pan:
+          description: Last four digits of the card
+          example: "20"
+          type: string
+        expire_year:
+          description: Card expiration year
+          example: "2023"
+          type: string
+        expire_month:
+          description: Card expiration month
+          example: "11"
+          type: string
+        cvc_required:
+          description: "Whether the CVC is required for paying with this card. Can\
+            \ be one of yes, no or not_tested."
+          example: "false"
+          type: string
+        bin:
+          description: "First 2 or 6 digits of the card number. (6 MC/VISA, 2 Amex/Diners)"
+          example: "415301"
+          type: string
+        funding:
+          description: "credit, debit or unknown"
+          example: debit
+          type: string
+        country_code:
+          description: e.g. FI
+          example: FI
+          type: string
+        category:
+          description: "business, prepaid or unknown"
+          example: unknown
+          type: string
+        card_fingerprint:
+          description: Identifies a specific card number. Cards with the same PAN
+            but different expiry dates will have the same PAN fingerprint. Hex string
+            of length 64.
+          example: da6b0df36efd17c0e7f6967b9e440a0c61b6bd3d96b62f14c90155a1fb883597
+          type: string
+        pan_fingerprint:
+          description: "Identifies a specific card, including the expiry date. Hex\
+            \ string of length 64."
+          example: e858e18daac509247f463292641237d6a74ce44e0971ba2de4a14874928a8805
+          type: string
+      required:
+      - country_code
+      - network_address
+      type: object
+    Refund:
+      example:
+        amount: 1590
+        refundStamp: "981346945"
+        callbackUrls:
+          cancel: https://ecom.example.org/cancel
+          success: https://ecom.example.org/success
+        items:
+        - amount: 1590
+          refundStamp: "7358134945"
+          stamp: "29858472952"
+          refundReference: "94753246"
+        - amount: 1590
+          refundStamp: "7358134945"
+          stamp: "29858472952"
+          refundReference: "94753246"
+        refundReference: "4723652"
+      properties:
+        amount:
+          description: |
+            The amount to refund. Required for normal merchant accounts.
+            SiS aggregate can refund the whole purchase by providing just the amount
+          example: 1590
+          format: int64
+          minimum: 1
+          type: integer
+        refundStamp:
+          description: Merchant specific unique stamp for the refund
+          example: "981346945"
+          maxLength: 200
+          type: string
+        refundReference:
+          description: Merchant reference for the refund
+          example: "4723652"
+          maxLength: 200
+          type: string
+        items:
+          description: Item level refund information for SiS refunds.
+          items:
+            $ref: '#/components/schemas/RefundItem'
+          type: array
+        callbackUrls:
+          $ref: '#/components/schemas/Callbacks'
+      required:
+      - callbackUrls
+      type: object
+    RefundItem:
+      example:
+        amount: 1590
+        refundStamp: "7358134945"
+        stamp: "29858472952"
+        refundReference: "94753246"
+      properties:
+        amount:
+          description: Amount to refund
+          example: 1590
+          format: int64
+          minimum: 1
+          type: integer
+        stamp:
+          description: Original item stamp
+          example: "29858472952"
+          type: string
+        refundStamp:
+          description: Merchant specific unique stamp for the refund
+          example: "7358134945"
+          maxLength: 200
+          type: string
+        refundReference:
+          description: Merchant reference for the refund
+          example: "94753246"
+          maxLength: 200
+          type: string
+      required:
+      - amount
+      - reference
+      - stamp
+      type: object
+    AddCardFormRequest:
+      description: Add card form request
+      example:
+        checkout-callback-success-url: https://example.com/success-callback
+        checkout-callback-cancel-url: https://example.com/failure-callback
+        signature: 0634fd04380bbaf5069c8c46a74c7d21df7414888d980c27a16d5e262cb8c9059139c212d0926000faf026e483904cefae2f5e9d9bd5f51fbc2ac4c4de518115
+        checkout-nonce: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+        checkout-timestamp: 2018-08-08T10:10:59Z
+        checkout-algorithm: sha512
+        language: FI
+        checkout-account: 375917
+        checkout-method: POST
+        checkout-redirect-success-url: https://example.com/redirect-success-handler
+        checkout-redirect-cancel-url: https://example.com/redirect-failure-handler
+      properties:
+        checkout-account:
+          description: Merchant ID
+          example: 375917
+          type: integer
+        checkout-algorithm:
+          description: HMAC algorithm
+          enum:
+          - sha256
+          - sha512
+          example: sha512
+          type: string
+        checkout-method:
+          description: HTTP method of the request
+          enum:
+          - GET
+          - POST
+          example: POST
+          type: string
+        checkout-nonce:
+          description: Unique random identifier
+          example: 39da40b8-5fb0-499c-869d-35e575b9a6cd
+          type: string
+        checkout-timestamp:
+          description: Current timestamp in ISO 8601 format
+          example: 2018-08-08T10:10:59Z
+          format: date-time
+          type: string
+        checkout-redirect-success-url:
+          description: Merchant's url for user redirect on successful card addition
+          example: https://example.com/redirect-success-handler
+          format: url
+          type: string
+        checkout-redirect-cancel-url:
+          description: Merchant's url for user redirect on failed card addition
+          example: https://example.com/redirect-failure-handler
+          format: url
+          type: string
+        checkout-callback-success-url:
+          description: Merchant's url called on successful card addition
+          example: https://example.com/success-callback
+          format: url
+          type: string
+        checkout-callback-cancel-url:
+          description: Merchant's url called on failed card addition
+          example: https://example.com/failure-callback
+          format: url
+          type: string
+        language:
+          description: Alpha-2 language code for the card addition form
+          enum:
+          - FI
+          - SV
+          - EN
+          example: FI
+          type: string
+        signature:
+          description: HMAC signature calculated over the request headers and payload
+          example: 0634fd04380bbaf5069c8c46a74c7d21df7414888d980c27a16d5e262cb8c9059139c212d0926000faf026e483904cefae2f5e9d9bd5f51fbc2ac4c4de518115
+          type: string
+      required:
+      - checkout-account
+      - checkout-algorithm
+      - checkout-redirect-cancel-url
+      - checkout-redirect-success-url
+      type: object
+    TokenizationRequestResponse:
+      example:
+        card:
+          country_code: FI
+          funding: debit
+          card_fingerprint: da6b0df36efd17c0e7f6967b9e440a0c61b6bd3d96b62f14c90155a1fb883597
+          cvc_required: "false"
+          bin: "415301"
+          partial_pan: "20"
+          expire_month: "11"
+          expire_year: "2023"
+          type: Visa
+          category: unknown
+          pan_fingerprint: e858e18daac509247f463292641237d6a74ce44e0971ba2de4a14874928a8805
+        token: 123e4567-e89b-12d3-a456-426655440000
+        customer:
+          country_code: FI
+          network_address: 93.174.192.154
+      properties:
+        token:
+          description: Token used to make authorization holds & charges on card
+          example: 123e4567-e89b-12d3-a456-426655440000
+          type: string
+        customer:
+          $ref: '#/components/schemas/TokenCustomerDetails'
+        card:
+          $ref: '#/components/schemas/Card'
+      required:
+      - token
+    PaymentReportRequest:
+      description: Payment report request
+      example:
+        requestType: json
+        endDate: 2019-01-02T20:00:00
+        limit: 1000
+        submerchant: 695874
+        callbackUrl: https://example.com/payment-reports/
+        reportFields:
+        - entryDate
+        - entryDate
+        includeItems: true
+        paymentStatus: default
+        startDate: 2019-01-01T18:00:00
+      properties:
+        requestType:
+          description: In which format is the report delivered in
+          enum:
+          - json
+          - csv
+          example: json
+          type: string
+        callbackUrl:
+          description: To which URL is the report delivered to. Callback URLs must
+            use HTTPS
+          example: https://example.com/payment-reports/
+          format: url
+          type: string
+        paymentStatus:
+          default: default
+          description: "How are the payments statuses filtered. \"Default\" includes\
+            \ both paid and settled payments. \"Paid\" includes paid payments that\
+            \ have not been settled yet. \"All\" includes everything, for example\
+            \ unpaid or failed payments."
+          enum:
+          - default
+          - all
+          - paid
+          - settled
+          example: default
+          type: string
+        startDate:
+          description: Filter out payments created before given datetime.
+          example: 2019-01-01T18:00:00
+          format: datetime
+          type: string
+        endDate:
+          description: Filter out payments created after given datetime.
+          example: 2019-01-02T20:00:00
+          format: datetime
+          type: string
+        limit:
+          default: 50000
+          description: Limit the amount of payments included in the report.
+          example: 1000
+          maximum: 50000
+          type: integer
+        reportFields:
+          description: Limit the amount of fields included in the report. By default
+            all fields are included.
+          items:
+            enum:
+            - entryDate
+            - created
+            - amount
+            - status
+            - firstname
+            - familyname
+            - description
+            - reference
+            - paymentMethod
+            - stamp
+            - address
+            - postcode
+            - postoffice
+            - country
+            - checkoutReference
+            - archiveNumber
+            - payerName
+            - settlementId
+            - settlementDate
+            - originalTradeReference
+            - vatPercentage
+            - vatAmount
+            - paymentMethodFee
+            - paymentMethodCommission
+            - shopInShopCommission
+            - shopInShopCommissionVatPercentage
+            - shopInShopCommissionVatAmount
+            - refunditems
+            - tradeitems
+            type: string
+          type: array
+        submerchant:
+          description: Get submerchant's payment report
+          example: 695874
+          type: integer
+        includeItems:
+          description: Include trade items in created payment report
+          example: true
+          type: boolean
+      required:
+      - callbackUrl
+      - requestType
+      type: object
+    PaymentRequestResponse:
+      description: |
+        Response for a successful payment request. Mechant ecom site can then either redirect
+        the user to the URL given in href, or render the payment provider forms onsite. For
+        each payment method an HTML form needs to be rendered using the parameters returned
+        for each payment method provider.
+      example:
+        terms: "By continuing with your payment, you agree to our <a href=\"https://www.checkout.fi/ehdot-ja-sopimukset/maksuehdot\"\
+          \ target=\"_blank\">payment terms & conditions</a>"
+        groups:
+        - svg: https://static.paytrail.com/static/img/payment-groups/bank.svg
+          name: Bank payment methods
+          icon: https://static.paytrail.com/static/img/payment-groups/bank.png
+          id: bank
+        - svg: https://static.paytrail.com/static/img/payment-groups/bank.svg
+          name: Bank payment methods
+          icon: https://static.paytrail.com/static/img/payment-groups/bank.png
+          id: bank
+        href: https://pay.paytrail.com/pay/93ee8d18-10db-410b-92ac-7d6e49369ce3
+        transactionId: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+        providers:
+        - svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+          name: OP
+          icon: https://static.paytrail.com/static/img/op_140x75.png
+          id: osuuspankki
+          parameters:
+          - name: VALUUTTALAJI
+            value: EUR
+          - name: VALUUTTALAJI
+            value: EUR
+          url: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+          group: bank
+        - svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+          name: OP
+          icon: https://static.paytrail.com/static/img/op_140x75.png
+          id: osuuspankki
+          parameters:
+          - name: VALUUTTALAJI
+            value: EUR
+          - name: VALUUTTALAJI
+            value: EUR
+          url: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+          group: bank
+      properties:
+        transactionId:
+          description: Checkout assigned transaction ID for the payment.
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        href:
+          description: Unique URL to hosted payment gateway
+          example: https://pay.paytrail.com/pay/93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: url
+          type: string
+        terms:
+          description: Text containing a link to the terms of payment
+          example: "By continuing with your payment, you agree to our <a href=\"https://www.checkout.fi/ehdot-ja-sopimukset/maksuehdot\"\
+            \ target=\"_blank\">payment terms & conditions</a>"
+          type: string
+        groups:
+          description: Contains data about the payment method groups. Contains only
+            the groups found in the response's providers.
+          items:
+            $ref: '#/components/schemas/PaymentMethodGroupData'
+          type: array
+        providers:
+          items:
+            $ref: '#/components/schemas/PaymentMethodProvider'
+          type: array
+      required:
+      - href
+      - paymentMethods
+      - transactionId
+      type: object
+    TokenMITPaymentResponse:
+      description: |
+        Response for a successful merchant initiated transaction payment request.
+      example:
+        transactionId: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+      properties:
+        transactionId:
+          description: Checkout assigned transaction ID for the payment.
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+      required:
+      - transactionId
+      type: object
+    TokenCITPaymentResponse:
+      description: |
+        Response for a successful customer initiated transaction payment request.
+      example:
+        threeDSecureUrl: https://some-3ds-provider.com/efa4d1d9-db80-4ea7-a72f-c180ddbcae36
+        transactionId: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+      properties:
+        transactionId:
+          description: Checkout assigned transaction ID for the payment.
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        threeDSecureUrl:
+          description: "URL for 3DS authentication step-up. If this is returned, merchants\
+            \ needs to redirect customer to this given URL for 3DS authentication."
+          example: https://some-3ds-provider.com/efa4d1d9-db80-4ea7-a72f-c180ddbcae36
+          format: url
+          type: string
+      required:
+      - transactionId
+      type: object
+    PaymentMethodGroupData:
+      description: "ID, name and icon URLs for a payment method group"
+      example:
+        svg: https://static.paytrail.com/static/img/payment-groups/bank.svg
+        name: Bank payment methods
+        icon: https://static.paytrail.com/static/img/payment-groups/bank.png
+        id: bank
+      properties:
+        id:
+          description: ID of the group
+          enum:
+          - mobile
+          - bank
+          - creditcard
+          - credit
+          example: bank
+          type: string
+        name:
+          description: Localized name of the group
+          example: Bank payment methods
+          type: string
+        icon:
+          description: URL to the group PNG icon
+          example: https://static.paytrail.com/static/img/payment-groups/bank.png
+          format: url
+          type: string
+        svg:
+          description: URL to the group SVG icon (recommended to be used instead if
+            PNG)
+          example: https://static.paytrail.com/static/img/payment-groups/bank.svg
+          format: url
+          type: string
+      required:
+      - icon
+      - id
+      - name
+      - svg
+      type: object
+    BasePaymentMethodProvider:
+      example:
+        svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+        name: OP
+        icon: https://static.paytrail.com/static/img/op_140x75.png
+        id: osuuspankki
+        group: bank
+      properties:
+        id:
+          description: ID of the provider
+          example: osuuspankki
+          type: string
+        name:
+          description: Display name of the payment method
+          example: OP
+          type: string
+        svg:
+          description: URL to payment method SVG icon (recommended to be used instead
+            if PNG)
+          example: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+          format: url
+          type: string
+        icon:
+          description: URL to payment method PNG icon
+          example: https://static.paytrail.com/static/img/op_140x75.png
+          format: url
+          type: string
+        group:
+          enum:
+          - mobile
+          - bank
+          - creditcard
+          - credit
+          example: bank
+          type: string
+      required:
+      - group
+      - icon
+      - id
+      - name
+      - svg
+      type: object
+    PaymentMethodProvider:
+      allOf:
+      - $ref: '#/components/schemas/BasePaymentMethodProvider'
+      - description: Each payment method provider object describes an HTML form. The
+          payment method parameters need to be posted to defined url in application/x-www-form-urlencoded
+          format.
+      - properties:
+          url:
+            description: Form action url
+            example: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+            format: url
+            type: string
+          parameters:
+            items:
+              $ref: '#/components/schemas/PaymentMethodProvider_allOf_parameters'
+            type: array
+        required:
+        - group
+        - icon
+        - name
+        - parameters
+        - svg
+        - url
+      example:
+        svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+        name: OP
+        icon: https://static.paytrail.com/static/img/op_140x75.png
+        id: osuuspankki
+        parameters:
+        - name: VALUUTTALAJI
+          value: EUR
+        - name: VALUUTTALAJI
+          value: EUR
+        url: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+        group: bank
+    Payment:
+      example:
+        reference: "9187445"
+        createdAt: 2019-10-30T09:13:00
+        amount: 1590
+        filingCode: filingCode
+        provider: osuuspankki
+        stamp: "29858472952"
+        paidAt: 2019-10-30T09:14:28
+        currency: EUR
+        href: https://pay.paytrail.com/pay/93ee8d18-10db-410b-92ac-7d6e49369ce3
+        transactionId: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+        status: new
+      properties:
+        transactionId:
+          description: Transaction ID
+          example: 93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: uuid
+          type: string
+        status:
+          description: Transaction status
+          enum:
+          - new
+          - ok
+          - fail
+          - pending
+          - delayed
+          - authorization-hold
+          type: string
+        amount:
+          example: 1590
+          format: int64
+          type: integer
+        currency:
+          enum:
+          - EUR
+          example: EUR
+          type: string
+        stamp:
+          example: "29858472952"
+          type: string
+        reference:
+          example: "9187445"
+          type: string
+        createdAt:
+          example: 2019-10-30T09:13:00
+          type: string
+        href:
+          description: "If transaction is in status 'new', link to the hosted payment\
+            \ gateway"
+          example: https://pay.paytrail.com/pay/93ee8d18-10db-410b-92ac-7d6e49369ce3
+          format: url
+          type: string
+        provider:
+          description: "If processed, the name of the payment method provider"
+          example: osuuspankki
+          type: string
+        filingCode:
+          description: "If paid, the filing code issued by the payment method provider\
+            \ if any"
+          type: string
+        paidAt:
+          description: Timestamp when the transaction was paid
+          example: 2019-10-30T09:14:28
+          type: string
+      required:
+      - amount
+      - createdAt
+      - currency
+      - reference
+      - stamp
+      - status
+      - transctionId
+      type: object
+    RefundResponse:
+      example:
+        provider: osuuspankki
+        transactionId: 912b13eb-c8ab-4397-a21a-9e9e1419eebe
+        status: ok
+      properties:
+        status:
+          enum:
+          - ok
+          - pending
+          - fail
+          type: string
+        transactionId:
+          description: Checkout transaction ID for the refund
+          example: 912b13eb-c8ab-4397-a21a-9e9e1419eebe
+          format: uuid
+          type: string
+        provider:
+          description: Payment method provider
+          example: osuuspankki
+          type: string
+      type: object
+    ActivateInvoiceResponse:
+      example:
+        message: Collector invoice activated
+        status: ok
+      properties:
+        status:
+          enum:
+          - ok
+          - error
+          type: string
+        message:
+          description: Response details
+          example: Collector invoice activated
+          type: string
+      type: object
+    SettlementIdItem:
+      description: Settlement ID
+      example:
+        createdAt: 2019-01-01T00:00:00+02:00
+        settledAt: 2019-01-02T04:00:00+02:00
+        id: 123456
+      properties:
+        id:
+          description: ID of a settlement
+          example: 123456
+          format: int64
+          type: integer
+        createdAt:
+          description: When the settlement was formed
+          example: 2019-01-01T00:00:00+02:00
+          format: datetime
+          type: string
+        settledAt:
+          description: When the settlement was paid
+          example: 2019-01-02T04:00:00+02:00
+          format: datetime
+          type: string
+      required:
+      - createdAt
+      - id
+      - settledAt
+      type: object
+    PaymentReportBySettlementIdRequest:
+      description: Payment report request
+      example:
+        requestType: json
+        submerchant: 695874
+        callbackUrl: https://example.com/payment-reports/
+        reportFields:
+        - entryDate
+        - entryDate
+      properties:
+        requestType:
+          description: In which format is the report delivered in
+          enum:
+          - json
+          - csv
+          example: json
+          type: string
+        callbackUrl:
+          description: To which URL is the report delivered to
+          example: https://example.com/payment-reports/
+          format: url
+          type: string
+        reportFields:
+          description: Limit the amount of fields included in the report. By default
+            all fields are included.
+          items:
+            enum:
+            - entryDate
+            - created
+            - amount
+            - status
+            - firstname
+            - familyname
+            - description
+            - reference
+            - paymentMethod
+            - stamp
+            - address
+            - postcode
+            - postoffice
+            - country
+            - checkoutReference
+            - archiveNumber
+            - payerName
+            - settlementId
+            - settlementDate
+            - originalTradeReference
+            - vatPercentage
+            - vatAmount
+            - paymentMethodFee
+            - paymentMethodCommission
+            - shopInShopCommission
+            - shopInShopCommissionVatPercentage
+            - shopInShopCommissionVatAmount
+            type: string
+          type: array
+        submerchant:
+          description: Get submerchant's payment report
+          example: 695874
+          type: integer
+      required:
+      - callbackUrl
+      - requestType
+      type: object
+    PaymentReportRequestResponse:
+      example:
+        requestId: requestId
+      properties:
+        requestId:
+          description: Request id
+          type: string
+      required:
+      - requestId
+    PaymentReportCallbackJSON:
+      description: The returned fields can be filtered out by specifying "reportFields"
+        parameter
+      example:
+        country: Finland
+        firstname: John
+        originalTradeReference: 12345-abc
+        shopInShopCommission: 0.8
+        refunditems: stamp1:400|stamp2:200
+        familyname: Doe
+        checkoutReference: "1031751"
+        description: Cat food and rubber boots
+        stamp: CO~1554204687711
+        paymentMethodFee: 0.12
+        settlementId: 1235678
+        reference: 12345-abc
+        vatPercentage: 24
+        payerName: DOEJOHN
+        archiveNumber: "81295824808952395"
+        amount: 15.95
+        postoffice: Tampere
+        address: Hämeenkatu 16
+        entryDate: 11-06-2019
+        created: 11:31
+        postcode: "33100"
+        settlementDate: 2019-04-04
+        vatAmount: 0.192
+        paymentMethodCommission: 0.024
+        shopInShopCommissionVatAmount: 0.192
+        paymentMethod: OP
+        shopInShopCommissionVatPercentage: 24
+        status: Paid
+      properties:
+        entryDate:
+          description: When the payment was paid or initialized
+          example: 11-06-2019
+          format: DD-MM-YYYY
+          type: string
+        created:
+          description: Hour and minute of the payment creation
+          example: 11:31
+          format: HH:mm
+          type: string
+        amount:
+          description: Payment amount in Euros
+          example: 15.95
+          type: float
+        status:
+          description: Payment status
+          enum:
+          - New
+          - Paid
+          - waiting for approval
+          - Cancelled
+          - Timeout
+          - Halted
+          - Delayed
+          - Paid and settled
+          example: Paid
+          type: string
+        firstname:
+          description: First name
+          example: John
+          type: string
+        familyname:
+          description: Last name
+          example: Doe
+          type: string
+        description:
+          description: Payment description
+          example: Cat food and rubber boots
+          format: datetime
+          type: string
+        reference:
+          description: Merchant's reference
+          example: 12345-abc
+          type: string
+        paymentMethod:
+          description: Payment method
+          example: OP
+          type: string
+        stamp:
+          description: Payment Stamp
+          example: CO~1554204687711
+          type: string
+        address:
+          description: Delivery address
+          example: Hämeenkatu 16
+          type: string
+        postcode:
+          description: Postal code
+          example: "33100"
+          type: string
+        postoffice:
+          description: Post office
+          example: Tampere
+          type: string
+        country:
+          description: Country of delivery
+          example: Finland
+          type: string
+        checkoutReference:
+          description: Checkout reference
+          example: "1031751"
+          type: string
+        archiveNumber:
+          description: Archive number
+          example: "81295824808952395"
+          type: string
+        payerName:
+          description: Name from bank
+          example: DOEJOHN
+          type: string
+        settlementId:
+          description: Settlement (report) id
+          example: 1235678
+          type: number
+        settlementDate:
+          description: When the payment is settled
+          example: 2019-04-04
+          format: DD-MM-YYYY
+          type: string
+        originalTradeReference:
+          description: Merchant's reference of the original payment in case of refund
+          example: 12345-abc
+          type: string
+        vatPercentage:
+          description: Payment VAT percentage
+          example: 24
+          format: float
+          type: number
+        vatAmount:
+          description: Payment VAT amount in Euros
+          example: 0.192
+          format: float
+          type: number
+        paymentMethodFee:
+          description: Payment method fee in Euros
+          example: 0.12
+          format: float
+          type: number
+        paymentMethodCommission:
+          description: Payment method commission amount in Euros
+          example: 0.024
+          format: float
+          type: number
+        shopInShopCommission:
+          description: Payment method commission amount in Euros
+          example: 0.8
+          format: float
+          type: number
+        shopInShopCommissionVatPercentage:
+          description: Payment method commission VAT percentage
+          example: 24
+          format: float
+          type: number
+        shopInShopCommissionVatAmount:
+          description: Payment method commission VAT amount in Euros
+          example: 0.192
+          format: float
+          type: number
+        refunditems:
+          description: Contains a `|` (pipe) -delimited list of *stamp*:*amount* pairs.
+            Pairs are delimited by a `:` (colon). Stamp refers to the payment item's
+            stamp that was refunded.
+          example: stamp1:400|stamp2:200
+          type: string
+    GroupedPaymentProvidersResponse:
+      description: List grouped providers response body
+      example:
+        terms: "By continuing with your payment, you agree to our <a href=\"https://www.checkout.fi/ehdot-ja-sopimukset/maksuehdot\"\
+          \ target=\"_blank\">payment terms & conditions</a>"
+        groups:
+        - svg: https://static.paytrail.com/static/img/payment-groups/bank.svg
+          name: Bank payment methods
+          icon: https://static.paytrail.com/static/img/payment-groups/bank.png
+          id: bank
+          providers:
+          - svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+            name: OP
+            icon: https://static.paytrail.com/static/img/op_140x75.png
+            id: osuuspankki
+            parameters:
+            - name: VALUUTTALAJI
+              value: EUR
+            - name: VALUUTTALAJI
+              value: EUR
+            url: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+            group: bank
+          - svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+            name: OP
+            icon: https://static.paytrail.com/static/img/op_140x75.png
+            id: osuuspankki
+            parameters:
+            - name: VALUUTTALAJI
+              value: EUR
+            - name: VALUUTTALAJI
+              value: EUR
+            url: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+            group: bank
+        - svg: https://static.paytrail.com/static/img/payment-groups/bank.svg
+          name: Bank payment methods
+          icon: https://static.paytrail.com/static/img/payment-groups/bank.png
+          id: bank
+          providers:
+          - svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+            name: OP
+            icon: https://static.paytrail.com/static/img/op_140x75.png
+            id: osuuspankki
+            parameters:
+            - name: VALUUTTALAJI
+              value: EUR
+            - name: VALUUTTALAJI
+              value: EUR
+            url: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+            group: bank
+          - svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+            name: OP
+            icon: https://static.paytrail.com/static/img/op_140x75.png
+            id: osuuspankki
+            parameters:
+            - name: VALUUTTALAJI
+              value: EUR
+            - name: VALUUTTALAJI
+              value: EUR
+            url: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+            group: bank
+        providers:
+        - svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+          name: OP
+          icon: https://static.paytrail.com/static/img/op_140x75.png
+          id: osuuspankki
+          parameters:
+          - name: VALUUTTALAJI
+            value: EUR
+          - name: VALUUTTALAJI
+            value: EUR
+          url: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+          group: bank
+        - svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+          name: OP
+          icon: https://static.paytrail.com/static/img/op_140x75.png
+          id: osuuspankki
+          parameters:
+          - name: VALUUTTALAJI
+            value: EUR
+          - name: VALUUTTALAJI
+            value: EUR
+          url: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+          group: bank
+      properties:
+        terms:
+          description: Localized text with a link to payment terms
+          example: "By continuing with your payment, you agree to our <a href=\"https://www.checkout.fi/ehdot-ja-sopimukset/maksuehdot\"\
+            \ target=\"_blank\">payment terms & conditions</a>"
+          type: string
+        groups:
+          description: Payment method group data for all of groups that are included
+            in the query
+          items:
+            $ref: '#/components/schemas/PaymentMethodGroupDataWithProviders'
+          type: array
+        providers:
+          description: A flat list of payment method providers
+          items:
+            $ref: '#/components/schemas/PaymentMethodProvider'
+          type: array
+      required:
+      - groups
+      - providers
+      - terms
+    PaymentMethodGroupDataWithProviders:
+      allOf:
+      - $ref: '#/components/schemas/PaymentMethodGroupData'
+      - description: "Localized name, icon and providers data for single payment method\
+          \ group"
+      - properties:
+          providers:
+            items:
+              $ref: '#/components/schemas/PaymentMethodProvider'
+            type: array
+        required:
+        - icon
+        - id
+        - name
+        - providers
+        - svg
+      example:
+        svg: https://static.paytrail.com/static/img/payment-groups/bank.svg
+        name: Bank payment methods
+        icon: https://static.paytrail.com/static/img/payment-groups/bank.png
+        id: bank
+        providers:
+        - svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+          name: OP
+          icon: https://static.paytrail.com/static/img/op_140x75.png
+          id: osuuspankki
+          parameters:
+          - name: VALUUTTALAJI
+            value: EUR
+          - name: VALUUTTALAJI
+            value: EUR
+          url: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+          group: bank
+        - svg: https://static.paytrail.com/static/img/payment-methods/op-logo.svg
+          name: OP
+          icon: https://static.paytrail.com/static/img/op_140x75.png
+          id: osuuspankki
+          parameters:
+          - name: VALUUTTALAJI
+            value: EUR
+          - name: VALUUTTALAJI
+            value: EUR
+          url: https://services.paytrail.com/payments/93ee8d18-10db-410b-92ac-7d6e49369ce3/osuuspankki/redirect
+          group: bank
+    Error:
+      example:
+        meta:
+        - meta
+        - meta
+        message: message
+        status: error
+      properties:
+        status:
+          enum:
+          - error
+          type: string
+        message:
+          description: Error description
+          type: string
+        meta:
+          description: Possible detailed error descriptions
+          items:
+            type: string
+          type: array
+      required:
+      - message
+      - status
+    Item_commission:
+      example:
+        amount: 8008281
+        merchant: merchant
+      properties:
+        merchant:
+          description: |
+            Merchant who get's the commission money. This merchant id can not be deleted, has to be active and
+            has to have same reseller with the merchant who initiated/created the webtrade.
+          maxLength: 10
+          type: string
+        amount:
+          description: |
+            Commission amount in currency minor unit, eg. EUR cents. VAT not applicable.
+            This field is needed only for specific shop-in-shop payments, usually not needed.
+          format: int32
+          maximum: 99999999
+          type: integer
+      type: object
+    PaymentMethodProvider_allOf_parameters:
+      example:
+        name: VALUUTTALAJI
+        value: EUR
+      properties:
+        name:
+          description: Name of the form input
+          example: VALUUTTALAJI
+          type: string
+        value:
+          description: Value of the form input
+          example: EUR
+          type: string
+      required:
+      - name
+      - value
+      type: object
+
