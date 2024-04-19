@@ -3,7 +3,6 @@
 Payment API
 - API version: 2.0.0
   - Build date: 2024-04-19T20:23:13.800614+03:00[Europe/Helsinki]
-  - Generator version: 7.5.0
 
 Paytrail Payment API
 
